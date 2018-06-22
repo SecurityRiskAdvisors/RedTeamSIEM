@@ -1,0 +1,14 @@
+---
+#
+# Playbook to install the ELK client utilities
+#
+
+- hosts: elk-client
+  remote_user: "{{ ansible_system_user }}"
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - { role: filebeat }
+    - { role: metricbeat, when: (install_metricbeat)}
+    - { role: packetbeat, when: (install_packetbeat)}
+    - { role: heartbeat, when: (install_heartbeat)}

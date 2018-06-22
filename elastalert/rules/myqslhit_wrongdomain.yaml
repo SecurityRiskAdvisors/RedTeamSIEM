@@ -1,0 +1,16 @@
+name: Email Entered With Wrong Domain
+type: frequency
+index: filebeat*
+num_events: 1
+timeframe:
+  minutes: 15
+filter:
+- query:
+    query_string: 
+      query: 'message:"insert into victims" AND -message:"@example.com"'
+alert:
+- "ms_teams"
+ms_teams_webhook_url:
+- "<webhook url here>"
+ms_teams_alert_summary: "Credentials entered on phishing site without target domain"
+

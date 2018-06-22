@@ -1,0 +1,16 @@
+name: Beacon Hit
+type: frequency
+index: filebeat*
+num_events: 1
+timeframe:
+  minutes: 15
+filter:
+- query:
+    query_string: 
+      query: "initial Beacon"
+alert:
+- "ms_teams"
+ms_teams_webhook_url:
+- "<webhook url here>"
+ms_teams_alert_summary: "New beacon established"
+

@@ -1,0 +1,15 @@
+name: Beacon Command Blocked (OPSEC Profile)
+type: frequency
+index: filebeat*
+num_events: 1
+timeframe:
+  minutes: 1 
+filter:
+- query:
+    query_string: 
+      query: 'message:"execution has been blocked"'
+alert:
+- "ms_teams"
+ms_teams_webhook_url:
+- "<webhook url here>"
+ms_teams_alert_summary: "Beacon Command - Blocked (OPSEC Profile)"

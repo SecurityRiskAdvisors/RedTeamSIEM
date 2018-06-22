@@ -1,0 +1,62 @@
+#
+# Install/run elastalert
+#
+
+- name: Symlink Python2.7 to Python
+  file: 
+    src: "/usr/bin/python2.7"
+    dest: "/usr/bin/python"
+    state: link
+  become: true
+
+- name: Install Pip
+  yum: 
+    name: python-pip
+  become: true
+
+- name: Install Elastalert deps
+  yum:
+    name: gcc, gcc-c++, python-devel, libffi-devel, openssl-devel
+  become: true
+
+- name: Install Elastalert
+  pip:
+    name: elastalert
+  become: true    
+
+- name: Install Supervisord
+  easy_install:
+    name: supervisor
+  become: true
+
+- name: Create Elastalert directory
+  file: path=/opt/elastalert/
+    state=directory
+    mode=0755
+  become: true
+
+- name: Create Elastalert rules directory
+  file: path=/opt/elastalert/rules/
+    state=directory
+    mode=0755
+  become: true
+
+- name: Copy Elastalert config to directory
+  template:
+    src=config.yml.j2
+    dest=/opt/elastalert/config.yml
+  become: true
+
+- name: Create Elastalert index
+  shell: elastalert-create-index --config /opt/elastalert/config.yml 
+  become: true
+
+- name: Copy in Supervisord config
+  template:
+    src=supervisord.conf
+    dest=/opt/elastalert/supervisord.conf
+  become: true
+
+- name: Launch Elastalert daemon
+  shell: supervisord -c /opt/elastalert/supervisord.conf
+  become: true

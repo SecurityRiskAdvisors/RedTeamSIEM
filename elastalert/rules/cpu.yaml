@@ -1,0 +1,16 @@
+name: CPU over 80
+type: frequency
+index: metricbeat*
+num_events: 10
+timeframe:
+  minutes: 2
+filter:
+- query:
+    query_string: 
+      query: 'system.cpu.total.pct:>0.80'
+alert:
+- "ms_teams"
+ms_teams_webhook_url:
+- "<webhook url here>"
+ms_teams_alert_summary: "Traffic hit for specific path"
+

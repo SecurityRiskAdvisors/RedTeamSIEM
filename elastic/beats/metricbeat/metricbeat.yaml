@@ -1,0 +1,10 @@
+metricbeat.modules:
+- module: system
+  period: 10s
+  metricsets:
+    - cpu
+    - load
+  cpu.metrics: [percentages]
+output.logstash:
+  hosts: ["10.0.0.1:5044"]
+

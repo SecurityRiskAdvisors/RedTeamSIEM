@@ -1,0 +1,81 @@
+---
+
+- name: Add ES GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  become: true
+
+- name: Install dependencies
+  apt: 
+    name: apt-transport-https 
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Add ES APT repo
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/6.x/apt stable main
+    state: present
+    filename: /etc/apt/sources.list.d/elastic-6.x.list
+  become: true
+
+- name: Update all packages to the latest version
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install beats
+  apt: 
+    name: filebeat,metricbeat
+  become: true
+
+- name: Set autorun for beats
+  shell: update-rc.d filebeat defaults 95 10 && update-rc.d metricbeat defaults 95 10
+  become: true
+
+- name: Creates ELK Cert Directory
+  file:
+    path: /etc/beat
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Install ELK server SSL client certificate
+  get_url:
+    url=http://{{ elk_server }}:{{ elk_server_ssl_cert_port }}/beat-forwarder.crt
+    dest=/etc/beat/beat-forwarder.crt
+  become: true
+
+- name: Install ELK server SSL client certificate
+  get_url:
+    url=http://{{ elk_server }}:{{ elk_server_ssl_cert_port }}/beat-forwarder.key
+    dest=/etc/beat/beat-forwarder.key
+  become: true
+ 
+- name: Copy Filebeat config to directory
+  template:
+    src=filebeat.yml.j2
+    dest=/etc/filebeat/filebeat.yml
+  force: true
+  become: true
+
+- name: Copy Metricbeat config to directory
+  template:
+    src=metricbeat.yml.j2
+    dest=/etc/metricbeat/metricbeat.yml
+  force: true
+  become: true
+
+- name: Restart Filebeat
+  service:
+    name: filebeat
+    state: restarted
+  become: true
+
+- name: Reatart Metricbeat
+  service:
+    name: metricbeat
+    state: restarted
+  become: true
+

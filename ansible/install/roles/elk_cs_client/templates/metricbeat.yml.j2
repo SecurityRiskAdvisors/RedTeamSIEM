@@ -1,0 +1,14 @@
+metricbeat.modules:
+- module: system
+  period: 10s
+  metricsets:
+    - cpu
+    - load
+  cpu.metrics: [percentages]
+output.logstash:
+  hosts: ["{{ elk_server }}:{{ logstash_syslog_port }}"]
+  ssl:
+    certificate_authorities: [/etc/beat/beat-forwarder.crt]
+    certificate: "/etc/beat/beat-forwarder.crt"
+    key: "/etc/beat/beat-forwarder.key"
+

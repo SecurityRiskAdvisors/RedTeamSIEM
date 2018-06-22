@@ -1,0 +1,107 @@
+---
+
+# Default Ansible user
+# change this if you use a non-root user for running Ansible playbooks
+ansible_system_user: ec2-user
+ansible_ssh_private_key_file: /home/ec2-user/DevLab.pem
+# EPEL Repository for extra packages
+epel_repo: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+########################################
+# ELK Server Variables
+########################################
+### FIREWALL MANAGEMENT ###
+# By default we will enable firewall management, this
+# will ensure if you're using either firewalld or iptables-services
+# that the proper service rules are applied and any existing rulesets
+# are saved.
+# DEFAULT: true
+# TO DISABLE: set to empty or false
+# NOTE: if you disable this you'll need to make sure you open up
+# equivalent firewall ports below or turn it off entirely (not recommended)
+# even if you leave firewall rules off you can safely leave this enabled
+# as the current firewall code will detect this and leave it alone.
+# if you really, really want to disable checking/applying service firewall rules
+# then change to 'false' or empty
+manage_firewall: true
+
+### nginx ###
+# add nonstandard port here for undercloud usage
+# note: you should use nonstandard ports for both here
+# if you choose to do this.
+#
+# usage: port nginx listens to reverse-proxy Kibana
+# default is 80
+# e.g. 8888
+nginx_kibana_port: 80
+#
+# usage: port filebeat client grabs the client SSL certificate
+# default is 8080
+# e.g. 9999
+elk_server_ssl_cert_port: 8080
+#
+# Kibana options
+# change this to affect nginx-wrapped htpasswd authentication
+kibana_user: admin
+kibana_password: admin
+
+### logging backend ###
+# you can pick between logstash or fluentd
+# if left empty logstash will be used
+### accepted options ###
+# logging_backend:
+# logging_backend: logstash
+# logging_backend: fluentd
+logging_backend: logstash
+#
+### logstash options ###
+logstash_syslog_port: 5044
+logstash_localsyslog_port: 5000
+### rsyslog options
+# set this to true if you want to accept
+# external syslog traffic
+syslog_listen_external: false
+### fluentd options ###
+fluentd_syslog_port: 42185
+fluentd_http_port: 9919
+fluentd_debug_port: 24230
+## elasticsearch local port listener
+# general usage will not need elasticsearch listening
+# outside of localhost, if you want to apply firewall rules
+# to allow external connections to elasticsearch change the below setting
+# to true
+# we will set this to false by default
+es_local_port: 9200
+es_listen_external: false
+### install curator tool ###
+# curator is the recommended tool for managing elasticsearch indexes
+# https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
+# default is no (set to blank) or false
+# set the below variable to 'true' to activate
+install_curator_tool: false
+## X-PACK
+# This installs an additional suite of tools from elastic
+# https://www.elastic.co/guide/en/x-pack/current/xpack-introduction.html
+# note: X-Pack will wrap ES with additional authentication, I do not
+# configure this for you, only install it.
+# most people will not need this for basic ELK usage.
+# default login/pass to Kibana for example is:
+# username: elastic
+# password: changeme
+# DO NOT CHANGE THIS UNLESS YOU CHANGE IT ON ES
+xpack_elastic_user_password: changeme
+# install elastic x-pack
+install_elasticsearch_xpack: false
+# install kibana x-pack
+install_kibana_xpack: false
+# install logstash x-pack
+install_logstash_xpack: false
+
+#Install Metricbeat
+install_metricbeat: true
+#Install Packetbeat
+install_packetbeat: false
+
+#This should be installed on only one server in your environment.
+#Install Heartbeat
+install_heartbeat: false

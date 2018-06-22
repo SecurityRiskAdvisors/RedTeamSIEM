@@ -1,0 +1,9 @@
+filebeat.prospectors:
+- type: log
+  enabled: true
+  paths:
+    - /home/ubuntu/cobaltstrike/weblog.log
+    - /home/ubuntu/cobaltstrike/events.log
+    - /home/ubuntu/cobaltstrike/logs/**/*.log
+output.logstash:
+  hosts: ["10.0.0.1:5044"]

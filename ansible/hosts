@@ -1,0 +1,10 @@
+[elk]
+10.0.0.1
+
+[elk-client]
+10.0.0.2
+
+[elk-deb-client]
+10.0.0.3
+
+[cs]

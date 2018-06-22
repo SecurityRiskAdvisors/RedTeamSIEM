@@ -1,0 +1,41 @@
+#Author: @2xxeformyshirt, @illegitimateDA
+#adapted from bluscreenofjeff's apache-style-weblog-output.cna and eventlog-to-slack.cna scripts
+
+#writes to local file in CS directory
+$eventlogpath = 'events.log';
+sub logevent {
+    local('$handle');
+    $timestamp = formatDate($1,"MM/dd/yyyy - HH:mm:ss z");
+    $handle = openf(">> $+ $eventlogpath");
+    println($handle,$timestamp." ".$2);
+    closef($handle);
+}
+
+#event triggers
+on event_action {
+    logevent($3,"$1 - $2");
+}
+on event_beacon_initial {
+    logevent($2,"initial Beacon from $1");
+}
+on event_join {
+    logevent($2,"$1 joined the server");
+}
+on event_newsite {
+    logevent($3,"$1 $2");
+}
+on event_notify {
+    logevent($2,$1);
+}
+on event_nouser {
+    logevent($2,"$1 timed out");
+}
+on event_public {
+    logevent($3,"$1 - $2");
+}
+on event_quit {
+    logevent($2,"$1 logged out of the server");
+}
+
+#status message
+elog("Event logging enabled on teamserver.");

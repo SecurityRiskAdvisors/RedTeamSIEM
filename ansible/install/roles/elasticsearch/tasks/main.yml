@@ -1,0 +1,107 @@
+---
+#
+# Install/run elasticsearch
+#
+
+- name: Install libsemanage-python and dependencies
+  yum: name={{ item }} state=present
+  become: true
+  with_items:
+    - libsemanage-python
+
+- name: Copy elasticsearch yum repo file
+  copy:
+    src=elasticsearch.repo
+    dest=/etc/yum.repos.d/elasticsearch.repo
+    owner=root
+    group=root
+    mode=0644
+  become: true
+
+- name: Install elasticsearch and openjdk
+  yum: name={{ item }} state=present
+  become: true
+  with_items:
+    - elasticsearch
+    - java-openjdk-headless
+
+- name: Copy templated elasticsearch.yml
+  template:
+    src=elasticsearch.yml.j2
+    dest=/etc/elasticsearch/elasticsearch.yml
+    owner=root
+    group=elasticsearch
+    mode=0660
+  become: true
+  ignore_errors: true
+
+- name: Check if system memory is greater than 64G
+  debug: msg="System memory is {{ansible_memory_mb.real.total | int}} so setting heapsize to 32G upper limit"
+  when: ansible_memory_mb.real.total|int >= 65536
+  become: true
+
+- name: Apply heapsize start tuning for systems with greater than 64G memory
+  lineinfile:
+    path=/etc/elasticsearch/jvm.options
+    regexp='^-Xms2g'
+    line='-Xms31g'
+  when: ansible_memory_mb.real.total|int >= 65536
+  become: true
+
+- name: Apply heapsize end tuning for systems with greater than 64G memory
+  lineinfile:
+    path=/etc/elasticsearch/jvm.options
+    regexp='^-Xmx2g'
+    line='-Xmx31g'
+  when: ansible_memory_mb.real.total|int >= 65536
+  register: elasticsearch_updated
+  become: true
+
+- name: Print extended documentation for heapsize tuning
+  debug: msg="Refer to https://www.elastic.co/guide/en/elasticsearch/guide/current/_limiting_memory_usage.html"
+  when: ansible_memory_mb.real.total|int >= 65536
+  become: true
+
+- name: Update elasticsearch startup with start heap size
+  become: true
+  lineinfile:
+    path=/etc/elasticsearch/jvm.options
+    regexp='^-Xms2g'
+    line='-Xms{{ (ansible_memory_mb.real.total / 2) | int }}m'
+  when: ansible_memory_mb.real.total|int < 65536
+
+- name: Update elasticsearch startup with end heap size
+  become: true
+  lineinfile:
+    path=/etc/elasticsearch/jvm.options
+    regexp='^-Xmx2g'
+    line='-Xmx{{ (ansible_memory_mb.real.total / 2) | int }}m'
+  when: ansible_memory_mb.real.total|int < 65536
+  register: elasticsearch_updated
+
+- name: Apply workaround for java listening port
+  raw: setcap 'cap_net_bind_service=+ep' /usr/lib/jvm/java-1.8.*openjdk-*/jre/bin/java
+  become: true
+
+# https://www.centos.org/forums/viewtopic.php?t=16398
+- name: Obtain exact version of JRE for libjli.so workaround
+  shell: "ls /usr/lib/jvm/ | grep java | grep openjdk-1"
+  register: libjli_location
+  become: true
+
+- name: Apply EL symlink workaround for libjli.so
+  file:
+    src='/usr/lib/jvm/{{libjli_location.stdout}}/jre/lib/amd64/jli/libjli.so'
+    dest='/lib64/libjli.so'
+    state=link
+  become: true
+
+- name: Start or restart elasticsearch service
+  command: systemctl restart elasticsearch.service
+  ignore_errors: true
+  when: elasticsearch_updated != 0
+  become: true
+
+- name: Setup elasticsearch service to autostart
+  service: name=elasticsearch state=started enabled=true
+  become: true
