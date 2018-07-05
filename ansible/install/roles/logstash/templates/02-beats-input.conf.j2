@@ -8,6 +8,12 @@ input {
   }
 }
 
+filter {
+    grok {
+        match => { "message" => "%{COMBINEDAPACHELOG}"}
+    }
+}
+
 output {
   elasticsearch {
     hosts => "localhost:{{es_local_port}}"
